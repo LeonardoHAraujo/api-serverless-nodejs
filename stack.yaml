@@ -17,6 +17,9 @@ Parameters:
     Type: String
     AllowedPattern: '[a-zA-Z0-9]+[a-zA-Z0-9-]+[a-zA-Z0-9]+'
     Default: slsFunc
+  ecrImageUri:
+    Description: ECR lambda image URI
+    Type: String
 
 # Resources for created in aws
 Resources:
@@ -37,7 +40,7 @@ Resources:
         IntegrationHttpMethod: POST
         Type: AWS_PROXY
         Uri: !Sub
-          - arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${lambdaArn}/invocations
+          - 'arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${lambdaArn}/invocations'
           - lambdaArn: !GetAtt lambdaFunction.Arn
       ResourceId: !GetAtt apiGateway.RootResourceId
       RestApiId: !Ref apiGateway
@@ -55,25 +58,27 @@ Resources:
     Properties:
       Description: Lambda function for main responsability
       FunctionName: !Ref lambdaFunctionName
-      # Handler: main/api.handle_requests
-      Handler: index.handle_requests
+      PackageType: Image
+      # Handler: /app/bin/main/api.handle_requests
+      # Handler: index.handle_requests
       Code:
-        ZipFile: |
-          exports.handle_requests = async (event, context) => {
-            console.log('EVENT', event)
-
-            return {
-              isBase64Encoded: false,
-              body: JSON.stringify({ foo: "bar" }),
-              headers: {
-                "Access-Control-Allow-Origin": "*",
-              },
-              statusCode: 200,
-            }
-          }
-      MemorySize: 512
+        ImageUri: !Ref ecrImageUri
+        # ZipFile: |
+        #   exports.handle_requests = async (event, context) => {
+        #     console.log('EVENT', event)
+        #
+        #     return {
+        #       isBase64Encoded: false,
+        #       body: JSON.stringify({ foo: "bar" }),
+        #       headers: {
+        #         "Access-Control-Allow-Origin": "*",
+        #       },
+        #       statusCode: 200,
+        #     }
+        #   }
+      MemorySize: 128
       Role: !GetAtt lambdaIAMRole.Arn
-      Runtime: nodejs16.x
+      Runtime: nodejs14.x
 
   lambdaApiGatewayInvoke:
     Type: AWS::Lambda::Permission
@@ -95,6 +100,8 @@ Resources:
             Principal:
               Service:
                 - lambda.amazonaws.com
+      ManagedPolicyArns:
+        - 'arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole'
       Policies:
         - PolicyDocument:
             Version: 2012-10-17
@@ -105,18 +112,18 @@ Resources:
                   - logs:PutLogEvents
                 Effect: Allow
                 Resource:
-                  - !Sub arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/${lambdaFunctionName}:*
+                  - !Sub 'arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/${lambdaFunctionName}:*'
           PolicyName: lambda
 
   lambdaLogGroup:
     Type: AWS::Logs::LogGroup
     Properties:
-      LogGroupName: !Sub /aws/lambda/${lambdaFunctionName}
+      LogGroupName: !Sub '/aws/lambda/${lambdaFunctionName}'
       RetentionInDays: 90
 
 Outputs:
   apiGatewayInvokeURL:
-    Value: !Sub https://${apiGateway}.execute-api.${AWS::Region}.amazonaws.com/${apiGatewayStageName}
+    Value: !Sub 'https://${apiGateway}.execute-api.${AWS::Region}.amazonaws.com/${apiGatewayStageName}'
 
   lambdaArn:
     Value: !GetAtt lambdaFunction.Arn

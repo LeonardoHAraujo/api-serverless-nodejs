@@ -1,4 +1,6 @@
+*.sh
 *.lock
+build
 node_modules
 event-api-gateway.txt
 
