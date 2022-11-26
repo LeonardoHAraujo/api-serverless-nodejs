@@ -56,29 +56,14 @@ Resources:
   lambdaFunction:
     Type: AWS::Lambda::Function
     Properties:
-      Description: Lambda function for main responsability
       FunctionName: !Ref lambdaFunctionName
-      PackageType: Image
-      # Handler: /app/bin/main/api.handle_requests
-      # Handler: index.handle_requests
+      Description: Lambda function for main responsability
       Code:
         ImageUri: !Ref ecrImageUri
-        # ZipFile: |
-        #   exports.handle_requests = async (event, context) => {
-        #     console.log('EVENT', event)
-        #
-        #     return {
-        #       isBase64Encoded: false,
-        #       body: JSON.stringify({ foo: "bar" }),
-        #       headers: {
-        #         "Access-Control-Allow-Origin": "*",
-        #       },
-        #       statusCode: 200,
-        #     }
-        #   }
-      MemorySize: 128
+      PackageType: Image
       Role: !GetAtt lambdaIAMRole.Arn
-      Runtime: nodejs14.x
+      Timeout: 90
+      MemorySize: 128
 
   lambdaApiGatewayInvoke:
     Type: AWS::Lambda::Permission
