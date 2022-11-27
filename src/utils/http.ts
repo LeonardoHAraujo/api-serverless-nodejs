@@ -1,4 +1,9 @@
-import { HttpResponse } from '../protocols/http'
+export type HttpResponse = {
+  isBase64Encoded: boolean;
+  body: any;
+  headers: any;
+  statusCode: number;
+}
 
 export const ok = (data: any): HttpResponse => ({
   isBase64Encoded: false,
@@ -17,3 +22,13 @@ export const badRequest = (error: Error): HttpResponse => ({
   },
   statusCode: 400,
 })
+
+export const serverError = (error: Error): HttpResponse => ({
+  isBase64Encoded: false,
+  body: JSON.stringify(error),
+  headers: {
+    "Access-Control-Allow-Origin": "*",
+  },
+  statusCode: 500,
+})
+
