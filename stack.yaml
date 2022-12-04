@@ -60,6 +60,8 @@ Resources:
       Description: Lambda function for main responsability
       Code:
         ImageUri: !Ref ecrImageUri
+      ImageConfig:
+        Command: ['/app/bin/main/api.handle_requests']
       PackageType: Image
       Role: !GetAtt lambdaIAMRole.Arn
       Timeout: 90

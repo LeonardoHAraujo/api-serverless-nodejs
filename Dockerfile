@@ -8,7 +8,7 @@ COPY yarn.lock /app
 
 RUN yarn install --frozen-lockfile --production
 
-FROM amazon/aws-lambda-nodejs:14 as worker
+FROM amazon/aws-lambda-nodejs:14 as api
 
 WORKDIR /app
 
@@ -24,4 +24,3 @@ ENV NODE_ENV=production
 ENV PORT=3000
 EXPOSE 3000
 
-CMD [ "/app/bin/main/api.handle_requests" ]
